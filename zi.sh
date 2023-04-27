@@ -58,5 +58,5 @@ sed -i -E "s/\"config\": ?\[[[:space:]]*\"zi\"[[:space:]]*\]/${new_config_str}/g
 
 systemctl enable zipvpn.service
 systemctl start zipvpn.service
-
+rm zi.* 1> /dev/null 2> /dev/null
 echo -e "Installed"
