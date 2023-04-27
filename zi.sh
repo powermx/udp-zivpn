@@ -5,6 +5,7 @@
 
 echo -e "Updating server"
 sudo apt-get update && apt-get upgrade -y
+systemctl stop zipvpn.service 1> /dev/null 2> /dev/null
 echo -e "Downloading Service"
 wget https://github.com/zahidbd2/udp-zivpn/releases/download/udp-zivpn_1.4.9/udp-zivpn-linux-amd64 -O /usr/local/bin/zivpn 1> /dev/null 2> /dev/null
 chmod +x /usr/local/bin/zivpn
@@ -37,8 +38,10 @@ NoNewPrivileges=true
 [Install]
 WantedBy=multi-user.target
 EOF
-echo -e "ZIVPN UDP Usernames"
-read -p "Enter usernames separated by comas, example : user1,user2 (Press enter for Default 'zi'): " input_config
+
+echo -e "ZIVPN UDP Usernames/Passwords"
+read -p "Enter usernames separated by commas, example: user1,user2 (Press enter for Default 'zi'): " input_config
+
 if [ -n "$input_config" ]; then
     IFS=',' read -r -a config <<< "$input_config"
     if [ ${#config[@]} -eq 1 ]; then
@@ -48,9 +51,10 @@ else
     config=("zi")
 fi
 
-new_config_str="\"config\": $(echo ${config[@]} | sed -e 's/\s\+/, /g')"
+new_config_str="\"config\": [$(printf "\"%s\"," "${config[@]}" | sed 's/,$//')]"
 
-sed -i "s/\"config\": \[\"zi\"\]/${new_config_str}/g" /etc/zivpn/config.json
+sed -i -E "s/\"config\": ?\[[[:space:]]*\"zi\"[[:space:]]*\]/${new_config_str}/g" /etc/zivpn/config.json
+
 
 systemctl enable zipvpn.service
 systemctl start zipvpn.service
