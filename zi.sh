@@ -37,6 +37,20 @@ NoNewPrivileges=true
 [Install]
 WantedBy=multi-user.target
 EOF
+echo -e "ZIVPN UDP Usernames"
+read -p "Enter usernames separated by comas, example : user1,user2 (Press enter for Default 'zi'): " input_config
+if [ -n "$input_config" ]; then
+    IFS=',' read -r -a config <<< "$input_config"
+    if [ ${#config[@]} -eq 1 ]; then
+        config+=(${config[0]})
+    fi
+else
+    config=("zi")
+fi
+
+new_config_str="\"config\": $(echo ${config[@]} | sed -e 's/\s\+/, /g')"
+
+sed -i "s/\"config\": \[\"zi\"\]/${new_config_str}/g" /etc/zivpn/config.json
 
 systemctl enable zipvpn.service
 systemctl start zipvpn.service
