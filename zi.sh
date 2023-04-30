@@ -56,7 +56,7 @@ new_config_str="\"config\": [$(printf "\"%s\"," "${config[@]}" | sed 's/,$//')]"
 sed -i -E "s/\"config\": ?\[[[:space:]]*\"zi\"[[:space:]]*\]/${new_config_str}/g" /etc/zivpn/config.json
 
 
-systemctl enable zipvpn.service
-systemctl start zipvpn.service
+systemctl enable zivpn.service
+systemctl start zivpn.service
 rm zi.* 1> /dev/null 2> /dev/null
 echo -e "Installed"
