@@ -2,7 +2,6 @@
 # Zivpn UDP Module installer
 # Creator Zahid Islam
 
-
 echo -e "Updating server"
 sudo apt-get update && apt-get upgrade -y
 systemctl stop zivpn.service 1> /dev/null 2> /dev/null
@@ -12,12 +11,13 @@ chmod +x /usr/local/bin/zivpn
 mkdir /etc/zivpn 1> /dev/null 2> /dev/null
 wget https://raw.githubusercontent.com/zahidbd2/udp-zivpn/main/config.json -O /etc/zivpn/config.json 1> /dev/null 2> /dev/null
 
-
 echo "Generating cert files:"
 openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=California/L=Los Angeles/O=Example Corp/OU=IT Department/CN=zivpn" -keyout "/etc/zivpn/zivpn.key" -out "/etc/zivpn/zivpn.crt"
 sysctl -w net.core.rmem_max=16777216 1> /dev/null 2> /dev/null
 sysctl -w net.core.wmem_max=16777216 1> /dev/null 2> /dev/null
 iptables -t nat -A PREROUTING -i $(ip -4 route ls|grep default|grep -Po '(?<=dev )(\S+)'|head -1) -p udp --dport 20000:50000 -j DNAT --to-destination :5666
+ufw allow 20000:50000/udp
+ufw allow 5666/udp
 cat <<EOF > /etc/systemd/system/zivpn.service
 [Unit]
 Description=zivpn VPN Server
@@ -54,7 +54,6 @@ fi
 new_config_str="\"config\": [$(printf "\"%s\"," "${config[@]}" | sed 's/,$//')]"
 
 sed -i -E "s/\"config\": ?\[[[:space:]]*\"zi\"[[:space:]]*\]/${new_config_str}/g" /etc/zivpn/config.json
-
 
 systemctl enable zivpn.service
 systemctl start zivpn.service
